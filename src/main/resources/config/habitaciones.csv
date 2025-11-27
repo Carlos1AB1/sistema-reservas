@@ -1,0 +1,9 @@
+numero,tipo,precio,capacidad,jacuzzi,vistaMar
+101,estandar,50000,2,false,false
+102,estandar,50000,2,false,false
+103,estandar,55000,2,false,true
+201,suite,150000,4,true,true
+202,suite,150000,4,true,false
+203,suite,180000,6,true,true
+301,estandar,60000,3,false,true
+302,suite,200000,6,true,true

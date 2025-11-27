@@ -1,12 +1,13 @@
 package com.hotel;
 
+import com.hotel.config.CargadorClientes;
+import com.hotel.config.CargadorDatos;
+import com.hotel.config.CargadorHabitaciones;
 import com.hotel.gestion.GestorClientes;
 import com.hotel.gestion.GestorHabitaciones;
 import com.hotel.gestion.GestorReservas;
 import com.hotel.modelo.Cliente;
 import com.hotel.modelo.Habitacion;
-import com.hotel.modelo.HabitacionEstandar;
-import com.hotel.modelo.HabitacionSuite;
 import com.hotel.pago.Criptomoneda;
 import com.hotel.pago.MetodoPago;
 import com.hotel.pago.TarjetaCredito;
@@ -14,6 +15,7 @@ import com.hotel.pago.TransferenciaBancaria;
 import com.hotel.reserva.Reserva;
 import com.hotel.reserva.ReservaVIP;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Clase principal que demuestra el funcionamiento del sistema de reservas de hotel.
@@ -30,41 +32,51 @@ public class SistemaReservasHotel {
     public static void main(String[] args) {
         System.out.println("=== SISTEMA DE RESERVAS DE HOTEL ===\n");
         
+        // Cargar configuración desde archivos externos (evitando datos quemados)
+        CargadorDatos cargadorDatos = new CargadorDatos();
+        CargadorClientes cargadorClientes = new CargadorClientes();
+        CargadorHabitaciones cargadorHabitaciones = new CargadorHabitaciones();
+        System.out.println();
+        
         // Inicializar gestores (SRP: cada uno tiene una responsabilidad única)
         GestorClientes gestorClientes = new GestorClientes();
         GestorHabitaciones gestorHabitaciones = new GestorHabitaciones();
         GestorReservas gestorReservas = new GestorReservas();
         
-        // Crear clientes
+        // Cargar clientes desde archivo CSV
         System.out.println("--- Registrando Clientes ---");
-        Cliente cliente1 = new Cliente("C001", "María Victoria", 
-                                      "maria.victoria@email.com", "3001234567");
-        Cliente cliente2 = new Cliente("C002", "Carlos Arturo Barón", 
-                                      "carlos.baron@email.com", "3002345678");
-        Cliente cliente3 = new Cliente("C003", "Carlos Augusto Aranzazu", 
-                                      "carlos.aranzazu@email.com", "3003456789");
-        
-        gestorClientes.registrarCliente(cliente1);
-        gestorClientes.registrarCliente(cliente2);
-        gestorClientes.registrarCliente(cliente3);
+        List<Cliente> clientes = cargadorClientes.cargarClientes();
+        for (Cliente cliente : clientes) {
+            gestorClientes.registrarCliente(cliente);
+        }
         System.out.println();
         
-        // Crear habitaciones (ISP: diferentes tipos de habitaciones)
+        // Cargar habitaciones desde archivo CSV
         System.out.println("--- Agregando Habitaciones ---");
-        Habitacion habitacion1 = new HabitacionEstandar("101", 50000, 2);
-        Habitacion habitacion2 = new HabitacionEstandar("102", 50000, 2);
-        Habitacion habitacion3 = new HabitacionSuite("201", 150000, 4, true, true);
-        Habitacion habitacion4 = new HabitacionSuite("202", 150000, 4, true, false);
-        
-        gestorHabitaciones.agregarHabitacion(habitacion1);
-        gestorHabitaciones.agregarHabitacion(habitacion2);
-        gestorHabitaciones.agregarHabitacion(habitacion3);
-        gestorHabitaciones.agregarHabitacion(habitacion4);
+        List<Habitacion> habitaciones = cargadorHabitaciones.cargarHabitaciones();
+        for (Habitacion habitacion : habitaciones) {
+            gestorHabitaciones.agregarHabitacion(habitacion);
+        }
         System.out.println();
+        
+        // Verificar que hay suficientes datos cargados
+        if (clientes.size() < 3 || habitaciones.size() < 4) {
+            System.err.println("Error: No hay suficientes datos para ejecutar el sistema");
+            return;
+        }
+        
+        // Obtener referencias a clientes y habitaciones cargados
+        Cliente cliente1 = clientes.get(0);
+        Cliente cliente2 = clientes.get(1);
+        Cliente cliente3 = clientes.get(2);
+        Habitacion habitacion1 = habitaciones.get(0);
+        Habitacion habitacion2 = habitaciones.get(1);
+        Habitacion habitacion3 = habitaciones.get(2);
+        Habitacion habitacion4 = habitaciones.get(3);
         
         // Crear métodos de pago (OCP: nuevos métodos de pago sin modificar código existente)
         System.out.println("--- Configurando Métodos de Pago ---");
-        MetodoPago tarjetaCredito = new TarjetaCredito("1234567890123456", "María Victoria");
+        MetodoPago tarjetaCredito = new TarjetaCredito("1234567890123456", cliente1.getNombre());
         MetodoPago transferencia = new TransferenciaBancaria("987654321", "Banco Nacional");
         MetodoPago criptomoneda = new Criptomoneda("BTC", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa");
         
